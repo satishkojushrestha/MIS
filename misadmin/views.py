@@ -27,7 +27,13 @@ class RegistrationView(GenericListView, Register):
     def post(self, request, *args, **kwargs):
         registration_form = self.registration_form(request.POST)
         if registration_form.is_valid():
-            ...
+            cleaned_data = registration_form.cleaned_data
+            if not self.validate_unique_users(cleaned_data):
+                return render(request, 'registration.html',
+                      self.format_resp(
+                          registration_form=self.registration_form(),
+                          message="User Already Registered."
+                      ))
 
         return render(request, 'registration.html', 
                       self.format_resp(

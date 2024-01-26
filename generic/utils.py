@@ -1,6 +1,7 @@
 from abc import abstractmethod
 from .exceptions import RegistrationNotImplemented
 import re
+from misadmin.models import User
 
 class Register:
 
@@ -9,7 +10,35 @@ class Register:
         raise RegistrationNotImplemented
     
     @staticmethod
-    def validate_unique_users(self): ...
+    def validate_unique_users(cleaned_data):
+        email = cleaned_data.get('email')
+        phone = cleaned_data.get('phone')
+        query = """
+            SELECT id FROM misadmin_user 
+            WHERE email = %s 
+            OR phone = %s
+        """
+        params = [email, phone]
+        user = User.objects.raw(
+            query, params
+        )
+        # query_user_e = """
+        #     SELECT id FROM misadmin_user 
+        #     WHERE email = %s 
+        # """
+
+        # query_user_p = """
+        #     SELECT id FROM misadmin_user 
+        #     WHERE phone = %s
+        # """
+        # params = [email, phone]
+        # user_e = User.objects.raw(
+        #     query_user_e, [email]
+        # )
+        if not len(user) > 0:
+            return False
+        else:
+            return False
 
 
 class Authentication:
