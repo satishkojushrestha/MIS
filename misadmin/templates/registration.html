@@ -48,6 +48,9 @@
                         <h2 class="form-title">Sign up</h2>
                         <form method="POST" class="register-form" id="register-form">
                             {% csrf_token %}
+                                {% if error_messages.error %}
+                                    {{ error_messages.error }}
+                                {% endif %}
                                 {{ registration_form.first_name.errors }}
                             <div class="form-group">
                                 <label for="name"><i class="zmdi zmdi-account material-icons-name"></i></label>
@@ -60,6 +63,9 @@
                                 {% comment %} <input type="text" name="name" id="name" placeholder="Your Name"/> {% endcomment %}
                                 {{ registration_form.last_name }}
                             </div>
+                            {% if error_messages.email_error %}
+                                {{ error_messages.email_error }}
+                            {% endif %}
                             {{ registration_form.email.errors }}
                             <div class="form-group">
                                 <label for="email"><i class="zmdi zmdi-email"></i></label>
@@ -72,6 +78,9 @@
                                 {{ registration_form.password }}
                                 {% comment %} <input type="password" name="pass" id="pass" placeholder="Password"/> {% endcomment %}
                             </div>
+                            {% if error_messages.phone %}
+                                {{ error_messages.phone }}
+                            {% endif %}
                             {{ registration_form.phone.errors }}
                             <div class="form-group">
                                 <label for="phone"><i class="zmdi zmdi-phone"></i></label>

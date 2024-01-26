@@ -5,9 +5,10 @@ from django.views.generic.list import MultipleObjectMixin, MultipleObjectTemplat
 from django.views.generic.detail import SingleObjectMixin, SingleObjectTemplateResponseMixin
 from django.http.request import HttpRequest as HttpRequest
 from django.http.response import HttpResponse as HttpResponse
+from .exceptions import ValidationException
 
 
-class GenericView(View):
+class GenericView(View, ValidationException):
 
     def get(
         self, request: http.HttpRequest, *args: Any, **kwargs: Any

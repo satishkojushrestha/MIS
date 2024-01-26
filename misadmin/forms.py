@@ -2,9 +2,7 @@ from django import forms
 from generic.choices import GENDER, GENRE
 from generic.utils import number_validator
 from .models import Artist
-
-from django.core.exceptions import ValidationError
-from django.utils.translation import gettext_lazy as _
+from generic.exceptions import ValidationException
 
 
 class RegistrationForm(forms.Form):
@@ -21,7 +19,7 @@ class RegistrationForm(forms.Form):
         phone = self.cleaned_data['phone']
         valid = number_validator(phone)
         if not valid:
-            raise ValidationError(_("Please enter a valid number"))
+            ValidationException.raise_validation_error("Please enter a valid number")
         return phone        
 
 
