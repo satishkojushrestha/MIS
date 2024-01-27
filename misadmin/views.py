@@ -35,10 +35,21 @@ class RegistrationView(GenericListView, Register):
                           error_messages=self.error_messages
                       ))
             if self.register_user():
-                return render(request, 'registration.html')
+                request.session['registration_message'] = {"header": "Success Message", "message": "You have registered successfully."}
+                return redirect("login")
 
         return render(request, 'registration.html', 
                       self.format_resp(
                           registration_form=registration_form,
                           error_messages=self.error_messages
+                      ))
+    
+
+class LoginView(GenericListView):
+    
+    def get(self, request, *args, **kwargs):
+        registration_message = request.session.pop('registration_message', None)
+        return render(request, 'login.html',
+                      self.format_resp(
+                          registration_message=registration_message
                       ))
