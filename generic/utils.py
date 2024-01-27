@@ -4,6 +4,9 @@ import re
 from misadmin.models import User
 from django.db import connection
 import hashlib
+import random
+from datetime import datetime
+from .connections import DatabaseConnection
 
 class Encrypt:
     
@@ -17,6 +20,13 @@ class Encrypt:
         hash = self.create_hash(data)
         return hash == db_data 
     
+    
+def generate_username(f_name, l_name):
+    n1 = random.randint(1,100)
+    n2 = random.randint(100,1000)
+    date_time = str(datetime.today())
+    return f"{f_name}-{n1}-{l_name}-{date_time}-{n2}"
+
 
 class Register(Encrypt):
     error_messages = {}
@@ -27,31 +37,56 @@ class Register(Encrypt):
         raise RegistrationNotImplemented
     
     def append_error(self, **kwargs):
-        _ = [self.error_messages.update(f'{key}: {value}') for key, value in kwargs.items()]
+        _ = [self.error_messages.update({f'{key}': f'{value}'}) for key, value in kwargs.items()]
         return 
     
     def validate_unique_users(self):
+        self.error_messages = {}
+        valid_email = True
+        valid_phone = True
         email, phone = self.cleaned_data.get('email'), self.cleaned_data.get('phone')
         query = """
                 SELECT id FROM misadmin_user
                 """
         query_user_email = query + """WHERE email = %s"""
-        user_e = User.objects.raw(
-            query_user_email, [email]
-        )
-        if len(user_e) > 0:
-            self.append_error(
-                email_error="User with the same email is already registered."
-                )
         query_user_phone = query + """WHERE phone = %s"""
-        user_p = User.objects.raw(
-            query_user_phone, [phone]
-        )
-        if len(user_p) > 0:
-            self.append_error(
-                phone_error="User with the same number is already registered."
-                )
-        return
+
+        with DatabaseConnection() as db:
+            db.execute_query(query_user_email, [email])
+            user_e = db.get_query()
+            if user_e:
+                valid_email = False
+                self.append_error(
+                    email_error="User with the same email is already registered."
+                    )
+                
+            db.execute_query(query_user_phone, [phone])
+            user_p = db.get_query()
+            if user_p:
+                valid_phone = False
+                self.append_error(
+                    phone_error="User with the same number is already registered."
+                    )
+            
+
+        # user_e = User.objects.raw(
+        #     query_user_email, [email]
+        # )
+        # if len(user_e) > 0:
+        #     valid_email = False
+        #     self.append_error(
+        #         email_error="User with the same email is already registered."
+        #         )
+        # query_user_phone = query + """WHERE phone = %s"""
+        # user_p = User.objects.raw(
+        #     query_user_phone, [phone]
+        # )
+        # if len(user_p) > 0:
+        #     valid_phone = False
+        #     self.append_error(
+        #         phone_error="User with the same number is already registered."
+        #         )
+        return valid_email and valid_phone
     
     def register_user(self):
         if not self.cleaned_data:
@@ -59,17 +94,27 @@ class Register(Encrypt):
                 error="There has been some error please re-register"
             )
             return
-        password = self.check_hash(self.cleaned_data.pop('password'))
+        password = self.create_hash(self.cleaned_data.pop('password'))
+        f_name = self.cleaned_data['first_name']
+        l_name = self.cleaned_data['last_name']
+        username = generate_username(f_name, l_name)
+        current_date = datetime.now()
+        params = [
+            f_name, l_name,  self.cleaned_data['email'], 
+            password,  self.cleaned_data['phone'], self.cleaned_data['dob'], 
+            self.cleaned_data['gender'],  self.cleaned_data['address'], "true",
+            "true", username, "false", "true", current_date, current_date, current_date
+        ]
         # performing create operation
         with connection.cursor() as db:
             db.execute(
                 """
-                    INSERT INTO misadmin_user(first_name, last_name, email, password, phone, dob, gender, address, is_admin)
-                    VALUES(%s,%s,%s,%s,%s,%s,%s,%b)
+                    INSERT INTO misadmin_user(first_name, last_name, email, password, phone, dob, gender, address, is_admin, is_superuser, username, is_staff, is_active, date_joined, created_at, updated_at)
+                    VALUES(%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
                 """,
-                [self.cleaned_data['first_name'], self.cleaned_data['last_name'], self.cleaned_data['email'], password, self.cleaned_data['phone'], self.cleaned_data['dob'], self.cleaned_data['gender'], self.cleaned_data['address'], True]
+                params
                 )
-        connection.commit()
+            connection.commit()
         return True
 
 class Authentication:

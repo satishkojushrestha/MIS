@@ -78,8 +78,8 @@
                                 {{ registration_form.password }}
                                 {% comment %} <input type="password" name="pass" id="pass" placeholder="Password"/> {% endcomment %}
                             </div>
-                            {% if error_messages.phone %}
-                                {{ error_messages.phone }}
+                            {% if error_messages.phone_error %}
+                                {{ error_messages.phone_error }}
                             {% endif %}
                             {{ registration_form.phone.errors }}
                             <div class="form-group">

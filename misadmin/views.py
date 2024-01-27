@@ -31,7 +31,7 @@ class RegistrationView(GenericListView, Register):
             if not self.validate_unique_users():
                 return render(request, 'registration.html',
                       self.format_resp(
-                          registration_form=self.registration_form(),
+                          registration_form=registration_form,
                           error_messages=self.error_messages
                       ))
             if self.register_user():
