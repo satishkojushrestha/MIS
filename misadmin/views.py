@@ -1,12 +1,9 @@
-from typing import Any
-from django.http.request import HttpRequest as HttpRequest
-from django.http.response import HttpResponse as HttpResponse
-from generic.views import GenericListView
+from generic.views import GenericListView, GenericView
 from django.shortcuts import render, redirect
 from generic.utils import Register
 from .forms import RegistrationForm
 
-class DashboardView(GenericListView):
+class DashboardView(GenericView):
 
     def get(self, request, *args, **kwargs):
         return render(request, 'base.html')

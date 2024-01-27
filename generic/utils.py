@@ -66,26 +66,7 @@ class Register(Encrypt):
                 valid_phone = False
                 self.append_error(
                     phone_error="User with the same number is already registered."
-                    )
-            
-
-        # user_e = User.objects.raw(
-        #     query_user_email, [email]
-        # )
-        # if len(user_e) > 0:
-        #     valid_email = False
-        #     self.append_error(
-        #         email_error="User with the same email is already registered."
-        #         )
-        # query_user_phone = query + """WHERE phone = %s"""
-        # user_p = User.objects.raw(
-        #     query_user_phone, [phone]
-        # )
-        # if len(user_p) > 0:
-        #     valid_phone = False
-        #     self.append_error(
-        #         phone_error="User with the same number is already registered."
-        #         )
+                    )            
         return valid_email and valid_phone
     
     def register_user(self):
