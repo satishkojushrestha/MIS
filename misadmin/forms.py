@@ -20,8 +20,11 @@ class RegistrationForm(forms.Form):
         valid = number_validator(phone)
         if not valid:
             ValidationException.raise_validation_error("Please enter a valid number")
-        return phone        
+        return phone    
 
+class LoginForm(forms.Form):
+    username = forms.CharField(max_length=255, widget=forms.TextInput(attrs={'placeholder': 'Phone / Email '}))
+    password = forms.CharField(max_length=255, widget=forms.PasswordInput(attrs={'placeholder': 'Password'}))   
 
 class ArtistForm(forms.Form):
     name = forms.CharField(max_length=255)

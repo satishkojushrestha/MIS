@@ -10,12 +10,16 @@ class DatabaseConnection:
             self.__cursor.execute(query)
         else:
             self.__cursor.execute(query, params)
-
             
     def save(self):
         connection.commit()
 
-    def get_query(self):
+    # def get_query(self):
+    #     columns = [col[0] for col in self.__cursor.description]
+    #     data = self.__cursor.fetchone()
+    #     return [dict(zip(columns, str(row) if str(row) else '')) for row in data]
+
+    def get_id(self):
         try:
             return {f'{self.__cursor.description[0].name}' : f'{self.__cursor.fetchone()[0]}'}
         except:

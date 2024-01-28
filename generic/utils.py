@@ -10,11 +10,10 @@ from .connections import DatabaseConnection
 
 class Encrypt:
     
-    algo = hashlib.sha256()
-
     def create_hash(self, data):
-        self.algo.update(data.encode())
-        return self.algo.hexdigest()
+        __algo = hashlib.sha256()
+        __algo.update(data.encode())
+        return __algo.hexdigest()
 
     def check_hash(self, data, db_data):
         hash = self.create_hash(data)
@@ -53,7 +52,7 @@ class Register(Encrypt):
 
         with DatabaseConnection() as db:
             db.execute_query(query_user_email, [email])
-            user_e = db.get_query()
+            user_e = db.get_id()
             if user_e:
                 valid_email = False
                 self.append_error(
@@ -61,7 +60,7 @@ class Register(Encrypt):
                     )
                 
             db.execute_query(query_user_phone, [phone])
-            user_p = db.get_query()
+            user_p = db.get_id()
             if user_p:
                 valid_phone = False
                 self.append_error(
@@ -98,8 +97,35 @@ class Register(Encrypt):
             connection.commit()
         return True
 
-class Authentication:
-    ...
+class Authentication(Encrypt):
+    error_message = ""
+    cleaned_data = {}
+    user = ""
+
+    @staticmethod
+    def login_form(*args, **kwargs):
+        raise NotImplementedError
+    
+    def validate_request(self):
+        self.error_message = ""
+        if not self.cleaned_data:
+            self.error_message = "There has been some error. Please try again later."
+            return False
+        username = self.cleaned_data.get('username')
+        password = self.cleaned_data.get('password')
+        user_query = "SELECT * FROM misadmin_user where email=%s OR phone=%s"
+        with DatabaseConnection() as db:
+            db.execute_query(user_query, [username, username])
+            user = db.filter_query()[0]
+            self.user = User(**user)
+            if not user:
+                self.error_message = "Username or password is incorrect."
+                return False
+            db_password = user.get('password')
+            if not self.check_hash(password, db_password):
+                self.error_message = "Invalid Credentials."
+                return False
+        return True
 
 
 def number_validator(phone):
@@ -107,7 +133,7 @@ def number_validator(phone):
     re_match = re.match(re_pattern, phone)
     return re_match
 
-def year_validator(year):
-    re_pattern1 = re.compile('^19[0-9]{2}$')
-    re_pattern2 = re.compile('^20[0-2]{1}[0-3]{1}$')
+# def year_validator(year):
+#     re_pattern1 = re.compile('^19[0-9]{2}$')
+#     re_pattern2 = re.compile('^20[0-2]{1}[0-3]{1}$')
     
