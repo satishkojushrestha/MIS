@@ -3,5 +3,119 @@
 {% block current_page %} User {% endblock %}
 {% block users_active %} active {% endblock %}
 
+{% block css %}    
+
+    .table-wrapper{
+        margin: 0 auto;
+        width: 90%;
+        margin-top: 4%;
+        {% comment %} overflow-y: scroll; {% endcomment %}
+    }
+
+    @media only screen and (max-width: 700px){
+        .table-wrapper{
+            overflow-y: scroll;
+        }
+    }
+
+    .dark{
+        color: blank !important;
+    }
+
+    .table .thead-dark th {
+        color: #fff;
+        background-color: black;
+        border-color: black;
+    }
+
+    .table {
+        background-color: white;
+    }
+
+
+    .pagination {
+        display: inline-block;
+        position: relative;
+        float: right;
+        margin-right: 10px;
+      }
+      
+      .pagination a {
+        color: black;
+        float: left;
+        padding: 8px 16px;
+        text-decoration: none;
+      }
+      
+      .pagination a.active {
+        background-color: #4CAF50;
+        color: white;
+      }
+
+      .add-btn{
+        margin-bottom: 10px;
+      }
+
+{% endblock css %}
+
 {% block container %}
+
+    <div class="table-wrapper">
+        <div class="add-btn">
+            <form method = "post">
+                {% csrf_token %}
+                <button class="btn btn-success">Add User</button>
+            <form>
+            {% comment %} <a href="#" class="btn btn-success btn-circle btn-sm">
+                <i class="fas fa-plus"></i>
+            </a> {% endcomment %}
+        </div>
+        
+        <table class="table">
+            <thead class="thead-dark">
+            <tr class="dark">
+                <th scope="col">Id</th>
+                <th scope="col">Full Name</th>
+                <th scope="col">Email</th>
+                <th scope="col">Phone</th>
+                <th scope="col">DOB</th>
+                <th scope="col">Gender</th>
+                <th scope="col">Address</th>
+                <th scope="col">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+
+                {% for user in users %}
+                    <tr>
+                        <th scope="row">{{user.id}}</th>
+                        <td>{{user.first_name}} {{user.last_name}}</td>
+                        <td>{{user.email}}</td>
+                        <td>{{user.phone}}</td>
+                        <td>{{user.dob}}</td>
+                        <td>{{user.gender}}</td>
+                        <td>{{user.address}}</td>
+                        <td>
+                            <a href="#" class="btn btn-info btn-circle btn-sm">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="#" class="btn btn-danger btn-circle btn-sm">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="pagination">
+            {% for page_number in pagination_list %}
+                {% if page_number == page %}
+                    <a class="active btn-success" href="{% url 'users' %}?page={{page_number}}">{{ page_number }}</a>
+                {% else %}
+                    <a href="{% url 'users' %}?page={{page_number}}">{{ page_number }}</a>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
 {% endblock %}

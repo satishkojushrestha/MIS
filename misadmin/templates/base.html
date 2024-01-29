@@ -29,7 +29,15 @@
             background-size: cover;
         }
 
-    </style>
+        #wrapper #content-wrapper {
+            background-color: #ededed;
+            width: 100%;
+            overflow-x: hidden;
+        }
+        {% block css %}
+        
+        {% endblock css %}
+    </style>   
 
 </head>
 
@@ -62,10 +70,10 @@
                     <span>Users</span></a>
             </li>
 
-            <li class="nav-item {% block albums_active %} {% endblock %}">
-                <a class="nav-link" href="{% url 'albums' %}">
+            <li class="nav-item {% block artist_active %} {% endblock %}">
+                <a class="nav-link" href="{% url 'artists' %}">
                     <i class="fas fa-fw fa-list"></i>
-                    <span>Album</span></a>
+                    <span>Artist</span></a>
             </li>
 
 

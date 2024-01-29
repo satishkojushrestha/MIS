@@ -3,6 +3,7 @@ from django.shortcuts import render, redirect
 from generic.utils import Register, Authentication
 from .forms import RegistrationForm, LoginForm
 from django.contrib.auth import login, logout
+from generic.connections import DatabaseConnection
 
 class DashboardView(GenericView):
 
@@ -79,14 +80,46 @@ class LoginView(GenericListView, Authentication):
 
 class UsersView(GenericListView):
 
-    def get(self, request, *args, **kwargs):
-        return render(request, 'users.html')
+    @staticmethod
+    def generate_pagination_list(current_page, total_pages, max_pages_display=5):
+        if total_pages <= max_pages_display:
+            return list(range(1, total_pages + 1))
+
+        half_max = max_pages_display // 2
+
+        if current_page - half_max <= 0:
+            return list(range(1, max_pages_display + 1))
+
+        if current_page + half_max > total_pages:
+            return list(range(total_pages - max_pages_display + 1, total_pages + 1))
+
+        return list(range(current_page - half_max, current_page + half_max + 1))
+
+
+    def get(self, request, *args, **kwargs): 
+        selected_page = request.GET.get('page')
+        try:
+            selected_page = int(selected_page)
+        except:
+            selected_page = None
+        context = {}
+        with DatabaseConnection() as db:
+            # db.execute_query(user_query)
+            # users = db.filter_query()
+            data = db.execute_paginate_query("misadmin_user", per_page=3, page=selected_page)
+            context['users'] = data['datas']
+            context['per_page'] = data['per_page']
+            context['page'] = data['page']
+            context['total_pages'] = data['total_pages']
+        pagination_list = self.generate_pagination_list(context['page'], context['total_pages'])
+        context['pagination_list'] = pagination_list
+        return render(request, 'users.html', context)
     
 
-class AlbumsView(GenericListView):
+class ArtistsView(GenericListView):
 
     def get(self, request, *args, **kwargs):
-        return render(request, 'albums.html')
+        return render(request, 'artists.html')
     
 
 def logout_user(request):
