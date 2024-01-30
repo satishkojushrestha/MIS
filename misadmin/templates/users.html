@@ -62,10 +62,7 @@
 
     <div class="table-wrapper">
         <div class="add-btn">
-            <form method = "post">
-                {% csrf_token %}
-                <button class="btn btn-success">Add User</button>
-            <form>
+            <a class="btn btn-success" href="{% url 'user_actions' identifier='add' %}">Add User</a>
             {% comment %} <a href="#" class="btn btn-success btn-circle btn-sm">
                 <i class="fas fa-plus"></i>
             </a> {% endcomment %}

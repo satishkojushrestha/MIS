@@ -7,6 +7,7 @@ urlpatterns = [
     path('mis-admin/register', RegistrationView.as_view(), name='register'),
     path('mis-admin/login', LoginView.as_view(), name='login'),
     path('mis-admin/users', login_required(UsersView.as_view(), login_url="login"), name='users'),
+    path('mis-admin/users/<str:identifier>', login_required(UsersView.as_view(), login_url="login"), name='user_actions'),
     path('mis-admin/artists', login_required(ArtistsView.as_view(), login_url="login"), name='artists'),
     path('mis-admin/logout', logout_user, name='logout'),
 

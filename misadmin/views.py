@@ -78,7 +78,7 @@ class LoginView(GenericListView, Authentication):
                               )) 
     
 
-class UsersView(GenericListView):
+class UsersView(GenericListView):  
 
     @staticmethod
     def generate_pagination_list(current_page, total_pages, max_pages_display=5):
@@ -96,7 +96,24 @@ class UsersView(GenericListView):
         return list(range(current_page - half_max, current_page + half_max + 1))
 
 
-    def get(self, request, *args, **kwargs): 
+    def get(self, request, *args, **kwargs):
+        if kwargs:
+            identifier = kwargs['identifier']
+            if not isinstance(identifier, str):
+                try:
+                    identifier = int(identifier)
+                except:
+                    #render 404 page
+                    ...
+            if identifier == 'add':
+                return render(request, 'user_dynamic_form.html', {
+                    'form': RegistrationForm(),
+                    'current_page': 'Add User',
+                    'form_title': 'Create User',
+                })
+            else:
+              #render 404 page
+                ...  
         selected_page = request.GET.get('page')
         try:
             selected_page = int(selected_page)
