@@ -27,6 +27,21 @@ def generate_username(f_name, l_name):
     return f"{f_name}-{n1}-{l_name}-{date_time}-{n2}"
 
 
+def generate_pagination_list(current_page, total_pages, max_pages_display=5):
+        if total_pages <= max_pages_display:
+            return list(range(1, total_pages + 1))
+
+        half_max = max_pages_display // 2
+
+        if current_page - half_max <= 0:
+            return list(range(1, max_pages_display + 1))
+
+        if current_page + half_max > total_pages:
+            return list(range(total_pages - max_pages_display + 1, total_pages + 1))
+
+        return list(range(current_page - half_max, current_page + half_max + 1))
+
+
 class Register(Encrypt):
     error_messages = {}
     cleaned_data = {}
@@ -137,3 +152,13 @@ def number_validator(phone):
 #     re_pattern1 = re.compile('^19[0-9]{2}$')
 #     re_pattern2 = re.compile('^20[0-2]{1}[0-3]{1}$')
     
+
+def json_parser(data):
+    st = str(data)
+    list_data = st.split('&')[1:]
+    last_index = len(list_data) - 1
+    clean_list = list_data[3].split("'")[0]
+    list_data = list_data[:last_index] + [clean_list]
+    data_dict = {}
+    [data_dict.update({f"{data.split('=')[0]}": f"{data.split('=')[1]}"})  for data in list_data]
+    return data_dict

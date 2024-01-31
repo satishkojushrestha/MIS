@@ -35,7 +35,7 @@ class DatabaseConnection:
         context['total_pages'] = (total_data + per_page - 1) // per_page
         return context
                     
-    def save(self):
+    def commit(self):
         connection.commit()
 
     # def get_query(self):
@@ -48,6 +48,12 @@ class DatabaseConnection:
             return {f'{self.__cursor.description[0].name}' : f'{self.__cursor.fetchone()[0]}'}
         except:
             return None
+        
+    def get_by_id(self, table_name, id):
+        query = f"""SELECT * FROM {table_name} WHERE id=%s """
+        self.execute_query(query, [id])
+        return self.filter_query()[0]
+
 
     def filter_query(self):
         columns = [col[0] for col in self.__cursor.description]

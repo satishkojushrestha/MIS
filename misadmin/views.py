@@ -1,9 +1,10 @@
 from generic.views import GenericListView, GenericView
 from django.shortcuts import render, redirect
-from generic.utils import Register, Authentication
-from .forms import RegistrationForm, LoginForm
+from generic.utils import Register, Authentication, generate_pagination_list, json_parser
+from .forms import RegistrationForm, LoginForm, UserEditForm
 from django.contrib.auth import login, logout
 from generic.connections import DatabaseConnection
+from django.http import JsonResponse
 
 class DashboardView(GenericView):
 
@@ -78,42 +79,34 @@ class LoginView(GenericListView, Authentication):
                               )) 
     
 
-class UsersView(GenericListView):  
-
-    @staticmethod
-    def generate_pagination_list(current_page, total_pages, max_pages_display=5):
-        if total_pages <= max_pages_display:
-            return list(range(1, total_pages + 1))
-
-        half_max = max_pages_display // 2
-
-        if current_page - half_max <= 0:
-            return list(range(1, max_pages_display + 1))
-
-        if current_page + half_max > total_pages:
-            return list(range(total_pages - max_pages_display + 1, total_pages + 1))
-
-        return list(range(current_page - half_max, current_page + half_max + 1))
-
+class UsersView(GenericListView, Register):  
 
     def get(self, request, *args, **kwargs):
         if kwargs:
-            identifier = kwargs['identifier']
-            if not isinstance(identifier, str):
-                try:
-                    identifier = int(identifier)
-                except:
-                    #render 404 page
-                    ...
+            identifier = kwargs['identifier']            
+            try:
+                identifier = int(identifier)
+                with DatabaseConnection() as db:
+                    user = db.get_by_id('misadmin_user', identifier)                    
+                registration_form = UserEditForm(user)
+                return render(request, 'user_dynamic_form.html', {
+                    'form': registration_form,
+                    'current_page': 'Edit User',
+                    'form_title': 'Update User',
+                    'request_method': 'patch',
+                    'user_id': identifier
+                })
+
+            except:
+                ...
+
             if identifier == 'add':
                 return render(request, 'user_dynamic_form.html', {
                     'form': RegistrationForm(),
                     'current_page': 'Add User',
                     'form_title': 'Create User',
+                    'request_method': 'POST'
                 })
-            else:
-              #render 404 page
-                ...  
         selected_page = request.GET.get('page')
         try:
             selected_page = int(selected_page)
@@ -121,17 +114,57 @@ class UsersView(GenericListView):
             selected_page = None
         context = {}
         with DatabaseConnection() as db:
-            # db.execute_query(user_query)
-            # users = db.filter_query()
             data = db.execute_paginate_query("misadmin_user", per_page=3, page=selected_page)
             context['users'] = data['datas']
             context['per_page'] = data['per_page']
             context['page'] = data['page']
             context['total_pages'] = data['total_pages']
-        pagination_list = self.generate_pagination_list(context['page'], context['total_pages'])
+        pagination_list = generate_pagination_list(context['page'], context['total_pages'])
         context['pagination_list'] = pagination_list
         return render(request, 'users.html', context)
     
+    
+    def post(self, request, *args, **kwargs):
+        registration_form = RegistrationForm(request.POST)
+        if registration_form.is_valid():
+            self.cleaned_data = registration_form.cleaned_data
+            if not self.validate_unique_users():
+                return render(request, 'user_dynamic_form.html',
+                      self.format_resp(
+                          form=registration_form,
+                          error_messages=self.error_messages
+                      ))
+            if self.register_user():                
+                return redirect("users")
+
+        return render(request, 'user_dynamic_form.html', 
+                      self.format_resp(
+                          form=registration_form,
+                          error_messages=self.error_messages
+                      ))
+    
+    def patch(self, request, *args, **kwargs):
+        identifier = kwargs.get('identifier')
+        json_data = request.body
+        data = json_parser(json_data)
+        st = [f"{key}='{value}'" for key, value in data.items()]
+        value_updating = ','.join(st)
+        query = "UPDATE misadmin_user SET " + value_updating + f" WHERE id={identifier} "
+
+        with DatabaseConnection() as db:
+            db.execute_query(query)
+            db.commit()
+        return JsonResponse({'success': 'True'})
+    
+
+    def delete(self, request, *args, **kwargs):
+        id = int(kwargs.get('id'))
+        query = f"DELETE FROM misadmin_user WHERE id={id}"
+        with DatabaseConnection() as db:
+            db.execute_query(query)
+            db.commit()
+        return JsonResponse({'success': 'True'})        
+
 
 class ArtistsView(GenericListView):
 

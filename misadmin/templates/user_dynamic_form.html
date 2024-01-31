@@ -29,47 +29,92 @@
                 <h6 class="m-0 font-weight-bold text-primary">{{ form_title }}</h6>
             </div>
             <div class="card-body">
-                <form method="POST">
-                    <div class="row">
+                <span class='text-danger center' id="error-field"></span>
+                <form method="POST" id="user-dynamic-form">
+                    {% csrf_token %}
+                    <div class="row">                       
+                        <div class="col text-danger">
                         {{ form.first_name.errors }}                                                            
+                        </div>
+                        <div class="col text-danger">
+                        {{ form.last_name.errors }}                                                            
+                        </div>
+                    </div>
+                    <div class="row">
                         <div class="col">
                         {% render_field form.first_name class="form-control" %}
                         </div>
-                        {{ form.last_name.errors }}                                                            
                         <div class="col">
                         {% render_field form.last_name class="form-control" %}
                         </div>
                     </div> 
                     
+                    
                     <br>
-
-                    <div class="row">
-                        {{ form.email.errors }}                                                            
-                        <div class="col">
-                        {% render_field form.email class="form-control" %}
-                        </div>
-                        {{ form.phone.errors }}                                                            
-                        <div class="col">
-                        {% render_field form.phone class="form-control" %}
-                        </div>
-                        {{ form.dob.errors }}                                                            
-                        <div class="col">
-                        {% render_field form.dob class="form-control" %}                           
-                        </div>
-                    </div> 
-
-                    <br>
-
-                    <div class="row">
+                    
+                    <div class="row">                       
+                        <div class="col text-danger">
                         {{ form.gender.errors }}                                                            
+                        </div>
+                        <div class="col text-danger">
+                        {{ form.address.errors }}                                                            
+                        </div>
+
+                    </div>
+                    <div class="row">
                         <div class="col">
                             {% render_field form.gender class="form-control" %}                        
-                        </div>
-                        {{ form.address.errors }}                                                            
+                        </div>                        
                         <div class="col">
                             {% render_field form.address class="form-control" %}
                         </div>
                     </div> 
+
+                    <br>
+                    <div class="row">    
+                        <div class="col text-danger">
+                            {{ form.dob.errors }}                                                            
+                        </div>                   
+                        <div class="col text-danger">
+                            {% if error_messages.email_error %}
+                                {{ error_messages.email_error }}
+                            {% endif %}
+                        {{ form.email.errors }}  
+                        </div>
+                        <div class="col text-danger">
+                            {% if error_messages.phone_error %}
+                                {{ error_messages.phone_error }}
+                            {% endif %}
+                            {{ form.phone.errors }} 
+                        </div>                        
+                    </div>
+
+                    <div class="row">        
+                        <div class="col">
+                            {% render_field form.dob class="form-control" %}                           
+                            </div>                                                                                                  
+                        <div class="col">
+                        {% render_field form.email class="form-control" %}
+                        </div>                                                                                   
+                        <div class="col">
+                        {% render_field form.phone class="form-control" %}
+                        </div>                        
+                    </div> 
+
+                    <br>
+                    
+                    <div class="row">
+                       
+                        <div class="col text-danger">
+                        {{ form.password.errors }}                                                            
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            {% render_field form.password class="form-control" %}                        
+                        </div>
+                    </div>
 
                     <br>
                     <button class="btn btn-primary" type="Submit"> Submit </button>
@@ -82,4 +127,49 @@
 
 </div>
 
+{% endblock %}
+
+
+{% block script %}
+    <script>
+
+        function get_input_fields(){
+
+            const onlyInputs = document.querySelectorAll('#user-dynamic-form input');
+            var dict = {};
+
+            onlyInputs.forEach(input => {
+                dict[input.name] = input.value;
+            });
+
+            return dict
+        }
+
+
+        document.getElementById("user-dynamic-form").addEventListener("submit", function(event){
+            if ('{{request_method}}' === 'patch'){
+                event.preventDefault()
+                const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+                const data = get_input_fields()
+                const error_field = document.querySelector('#error-field')
+                $.ajax({                    
+                    type: "PATCH",
+                    url: "{% url 'user_actions' identifier=user_id %}",
+                    data: data,
+                    headers: {'X-CSRFToken': csrftoken},
+                    contentType: "application/json",
+                    success: function(response) {
+                        // Handle the success response
+                        window.location.href = "{% url 'users' %}";
+
+                    },
+                    error: function(xhr, status, error) {
+                        // Parsing the JSON string into a JavaScript object
+                        let jsonObject = JSON.parse(xhr.responseText);
+                        error_field.innerHTML = jsonObject.error
+                    }
+                });
+            }
+          });
+    </script>
 {% endblock %}

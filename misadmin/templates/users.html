@@ -93,12 +93,12 @@
                         <td>{{user.gender}}</td>
                         <td>{{user.address}}</td>
                         <td>
-                            <a href="#" class="btn btn-info btn-circle btn-sm">
+                            <a href="{% url 'user_actions' identifier=user.id %}" class="btn btn-info btn-circle btn-sm">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <a href="#" class="btn btn-danger btn-circle btn-sm">
+                            <button id='delete-user' class="btn btn-danger btn-circle btn-sm" onclick=delete_user({{user.id}})>
                                 <i class="fas fa-trash"></i>
-                            </a>
+                            </button>
                         </td>
                     </tr>
                 {% endfor %}
@@ -115,4 +115,32 @@
             {% endfor %}
         </div>
     </div>
+{% endblock %}
+
+
+{% block script  %}
+    {% csrf_token %}
+    <script>
+
+        function delete_user(id) {
+
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            $.ajax({                    
+                type: "DELETE",
+                url: "users/delete/" + id,
+                contentType: "application/json",
+                headers: {'X-CSRFToken': csrftoken},
+                success: function(response) {
+                    window.location.href = "{% url 'users' %}";
+
+                },
+                error: function(xhr, status, error) {
+                    // Parsing the JSON string into a JavaScript object
+                    //let jsonObject = JSON.parse(xhr.responseText);
+                    //error_field.innerHTML = jsonObject.error
+                }
+            });
+
+        }
+    </script>
 {% endblock %}
