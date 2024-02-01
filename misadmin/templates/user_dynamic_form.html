@@ -152,6 +152,7 @@
                 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
                 const data = get_input_fields()
                 const error_field = document.querySelector('#error-field')
+                {% if request_method %}
                 $.ajax({                    
                     type: "PATCH",
                     url: "{% url 'user_actions' identifier=user_id %}",
@@ -169,6 +170,7 @@
                         error_field.innerHTML = jsonObject.error
                     }
                 });
+                {% endif %}
             }
           });
     </script>

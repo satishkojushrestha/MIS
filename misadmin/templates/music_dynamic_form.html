@@ -30,22 +30,22 @@
             </div>
             <div class="card-body">
                 <span class='text-danger center' id="error-field"></span>
-                <form method="POST" id="artist-dynamic-form">
+                <form method="POST" id="music-dynamic-form">
                     {% csrf_token %}
                     <div class="row">                       
                         <div class="col text-danger">
-                        {{ form.name.errors }}                                                            
+                        {{ form.title.errors }}                                                            
                         </div>
                         <div class="col text-danger">
-                        {{ form.address.errors }}                                                            
+                        {{ form.album_name.errors }}                                                            
                         </div>
                     </div>
                     <div class="row">
                         <div class="col">
-                        {% render_field form.name class="form-control" placeholder='Name' %}
+                        {% render_field form.title class="form-control" placeholder='Title' %}
                         </div>
                         <div class="col">
-                        {% render_field form.address class="form-control" placeholder='Address' %}
+                        {% render_field form.album_name class="form-control" placeholder='Album Name' %}
                         </div>
                     </div> 
                     
@@ -54,42 +54,14 @@
                     
                     <div class="row">                       
                         <div class="col text-danger">
-                        {{ form.gender.errors }}                                                            
+                        {{ form.genre.errors }}                                                            
                         </div>
-                        <div class="col text-danger">
-                        {{ form.dob.errors }}                                                            
-                        </div>
-
                     </div>
                     <div class="row">
                         <div class="col">
-                            {% render_field form.gender class="form-control" placeholder='Gender' %}                        
+                            {% render_field form.genre class="form-control" placeholder='Genre' %}                        
                         </div>                        
-                        <div class="col">
-                            {% render_field form.dob class="form-control" placeholder='DOB [YYYY-MM-DD]' %}
-                        </div>
-                    </div> 
-
-                    <br>
-                    <div class="row">      
-                        <div class="col text-danger">
-                        {{ form.first_release_year.errors }}  
-                        </div>
-                        <div class="col text-danger">
-                            {{ form.no_of_albums_released.errors }} 
-                        </div>                        
-                    </div>
-
-                    <div class="row">        
-                        <div class="col">
-                            {% render_field form.first_release_year class="form-control" placeholder='First Release Year' %}                           
-                            </div>                                                                                                  
-                        <div class="col">
-                        {% render_field form.no_of_albums_released class="form-control" placeholder='No of Albums Released' %}
-                        </div>                                                                                                        
-                    </div> 
-
-                    <br>
+                    </div>                     
 
                     <br>
                     <button class="btn btn-primary" type="Submit"> Submit </button>
@@ -110,7 +82,7 @@
 
         function get_input_fields(){
 
-            const onlyInputs = document.querySelectorAll('#artist-dynamic-form input');
+            const onlyInputs = document.querySelectorAll('#music-dynamic-form input');
             var dict = {};
 
             onlyInputs.forEach(input => {
@@ -121,7 +93,7 @@
         }
 
 
-        document.getElementById("artist-dynamic-form").addEventListener("submit", function(event){
+        document.getElementById("music-dynamic-form").addEventListener("submit", function(event){
             if ('{{request_method}}' === 'patch'){
                 event.preventDefault()
                 const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
@@ -130,13 +102,13 @@
                 {% if request_method %}
                 $.ajax({                    
                     type: "PATCH",
-                    url: "{% url 'artist_actions' identifier=artist_id %}",
+                    url: "{% url 'music_actions' identifier=music_id artist_id=artist_id %}",
                     data: data,
                     headers: {'X-CSRFToken': csrftoken},
                     contentType: "application/json",
                     success: function(response) {
                         // Handle the success response
-                        window.location.href = "{% url 'artists' %}";
+                        window.location.href = "{% url 'music' id=artist_id %}";
 
                     },
                     error: function(xhr, status, error) {

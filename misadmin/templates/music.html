@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% load static %}
+{% block current_page %} Music {% endblock %}
+{% block artist_active %} active {% endblock %}
+
+{% block css %}    
+
+    .table-wrapper{
+        margin: 0 auto;
+        width: 90%;
+        margin-top: 4%;
+    }
+
+    @media only screen and (max-width: 700px){
+        .table-wrapper{
+            overflow-y: scroll;
+        }
+    }
+
+    .dark{
+        color: blank !important;
+    }
+
+    .table .thead-dark th {
+        color: #fff;
+        background-color: black;
+        border-color: black;
+    }
+
+    .table {
+        background-color: white;
+    }
+
+      .add-btn{
+        margin-bottom: 10px;
+      }
+
+{% endblock css %}
+
+{% block container %}
+
+    <div class="table-wrapper">
+        <div class="add-btn">
+            <a class="btn btn-success" href="{% url 'music_actions' identifier='add' artist_id=artist_id %}">Add Music</a>
+        </div>
+        
+        <table class="table">
+            <thead class="thead-dark">
+            <tr class="dark">
+                <th scope="col">Id</th>
+                <th scope="col">Title</th>
+                <th scope="col">Album Name</th>
+                <th scope="col">Genre</th>
+                <th scope="col">Created At</th>
+                <th scope="col">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+
+                {% for music in musics %}
+                    <tr>
+                        <th scope="row">{{music.id}}</th>
+                        <td>{{music.title}}</td>
+                        <td>{{music.album_name}}</td>
+                        <td>{{music.genre}}</td>
+                        <td>{{music.created_at}}</td>
+                        <td>
+                            <a href="{% url 'music_actions' identifier=music.id artist_id=artist_id %}" class="btn btn-info btn-circle btn-sm">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button id='delete-music' class="btn btn-danger btn-circle btn-sm" onclick=delete_music({{music.id}})>
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+ 
+    </div>
+{% endblock %}
+
+
+{% block script  %}
+    {% csrf_token %}
+    <script>
+
+        function delete_music(id) {
+
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            $.ajax({                    
+                type: "DELETE",
+                url: "/mis-admin/deletemusic/delete/" + id,
+                contentType: "application/json",
+                headers: {'X-CSRFToken': csrftoken},
+                success: function(response) {
+                    window.location.href = "{% url 'music' id=artist_id %}";
+
+                },
+                error: function(xhr, status, error) {
+                }
+            });
+
+        }
+    </script>
+{% endblock %}

@@ -131,15 +131,20 @@ class Authentication(Encrypt):
         user_query = "SELECT * FROM misadmin_user where email=%s OR phone=%s"
         with DatabaseConnection() as db:
             db.execute_query(user_query, [username, username])
-            user = db.filter_query()[0]
-            self.user = User(**user)
-            if not user:
-                self.error_message = "Username or password is incorrect."
+            try:
+                user = db.filter_query()[0]
+                self.user = User(**user)
+                if not user:
+                    self.error_message = "Username or password is incorrect."
+                    return False
+                db_password = user.get('password')
+                if not self.check_hash(password, db_password):
+                    self.error_message = "Invalid Credentials."
+                    return False
+            except:
+                self.error_message = "Invalid User."
                 return False
-            db_password = user.get('password')
-            if not self.check_hash(password, db_password):
-                self.error_message = "Invalid Credentials."
-                return False
+            
         return True
 
 
@@ -157,7 +162,7 @@ def json_parser(data):
     st = str(data)
     list_data = st.split('&')[1:]
     last_index = len(list_data) - 1
-    clean_list = list_data[3].split("'")[0]
+    clean_list = list_data[last_index].split("'")[0]
     list_data = list_data[:last_index] + [clean_list]
     data_dict = {}
     [data_dict.update({f"{data.split('=')[0]}": f"{data.split('=')[1]}"})  for data in list_data]

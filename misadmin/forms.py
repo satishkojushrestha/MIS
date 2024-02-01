@@ -1,7 +1,6 @@
 from django import forms
 from generic.choices import GENDER, GENRE
 from generic.utils import number_validator
-from .models import Artist
 from generic.exceptions import ValidationException
 
 
@@ -51,8 +50,7 @@ class ArtistForm(forms.Form):
     no_of_albums_released = forms.IntegerField()
 
 
-class MusicForm(forms.Form):
-    artist_id = forms.ModelChoiceField(queryset=Artist.objects.all())
+class MusicForm(forms.Form):    
     title = forms.CharField(max_length=255)
     album_name = forms.CharField(max_length=255)
     genre = forms.ChoiceField(choices=GENRE)

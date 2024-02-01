@@ -3,5 +3,149 @@
 {% block current_page %} Artist {% endblock %}
 {% block artist_active %} active {% endblock %}
 
+{% block css %}    
+
+    .table-wrapper{
+        margin: 0 auto;
+        width: 90%;
+        margin-top: 4%;
+        {% comment %} overflow-y: scroll; {% endcomment %}
+    }
+
+    @media only screen and (max-width: 700px){
+        .table-wrapper{
+            overflow-y: scroll;
+        }
+    }
+
+    .dark{
+        color: blank !important;
+    }
+
+    .table .thead-dark th {
+        color: #fff;
+        background-color: black;
+        border-color: black;
+    }
+
+    .table {
+        background-color: white;
+    }
+
+
+    .pagination {
+        display: inline-block;
+        position: relative;
+        float: right;
+        margin-right: 10px;
+      }
+      
+      .pagination a {
+        color: black;
+        float: left;
+        padding: 8px 16px;
+        text-decoration: none;
+      }
+      
+      .pagination a.active {
+        background-color: #4CAF50;
+        color: white;
+      }
+
+      .add-btn{
+        margin-bottom: 10px;
+      }
+
+{% endblock css %}
+
 {% block container %}
+
+    <div class="table-wrapper">
+        <div class="add-btn">
+            <a class="btn btn-success" href="{% url 'artist_actions' identifier='add' %}">Add Artist</a>
+            {% comment %} <a href="#" class="btn btn-success btn-circle btn-sm">
+                <i class="fas fa-plus"></i>
+            </a> {% endcomment %}
+        </div>
+        
+        <table class="table">
+            <thead class="thead-dark">
+            <tr class="dark">
+                <th scope="col">Id</th>
+                <th scope="col">Name</th>
+                <th scope="col">DOB</th>
+                <th scope="col">Gender</th>
+                <th scope="col">Address</th>
+                <th scope="col">First Release Year</th>
+                <th scope="col">No of Albums Released</th>
+                <th scope="col">Created At</th>
+                <th scope="col">Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+
+                {% for artist in artists %}
+                    <tr>
+                        <th scope="row">{{artist.id}}</th>
+                        <td>{{artist.name}}</td>
+                        <td>{{artist.dob}}</td>
+                        <td>{{artist.gender}}</td>
+                        <td>{{artist.address}}</td>
+                        <td>{{artist.first_release_year}}</td>
+                        <td>{{artist.no_of_albums_released}}</td>
+                        <td>{{artist.created_at}}</td>
+                        <td>
+                            <a href="{% url 'artist_actions' identifier=artist.id %}" class="btn btn-info btn-circle btn-sm">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button id='delete-artist' class="btn btn-danger btn-circle btn-sm" onclick=delete_artist({{artist.id}})>
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            <a href="{% url 'music' id=artist.id %}" class="btn btn-primary btn-circle btn-sm">
+                                <i class="fas fa-music"></i>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="pagination">
+            {% for page_number in pagination_list %}
+                {% if page_number == page %}
+                    <a class="active btn-success" href="{% url 'artists' %}?page={{page_number}}">{{ page_number }}</a>
+                {% else %}
+                    <a href="{% url 'artists' %}?page={{page_number}}">{{ page_number }}</a>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block script  %}
+    {% csrf_token %}
+    <script>
+
+        function delete_artist(id) {
+
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            $.ajax({                    
+                type: "DELETE",
+                url: "artists/delete/" + id,
+                contentType: "application/json",
+                headers: {'X-CSRFToken': csrftoken},
+                success: function(response) {
+                    window.location.href = "{% url 'artists' %}";
+
+                },
+                error: function(xhr, status, error) {
+                    // Parsing the JSON string into a JavaScript object
+                    //let jsonObject = JSON.parse(xhr.responseText);
+                    //error_field.innerHTML = jsonObject.error
+                }
+            });
+
+        }
+    </script>
 {% endblock %}
